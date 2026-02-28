@@ -1,35 +1,38 @@
-# Product Inventory Management API
+# Planetary API
 
-A robust RESTful API backend for product inventory management built with FastAPI and SQLAlchemy. This project provides a complete CRUD interface for managing product data with PostgreSQL database integration.
+A comprehensive RESTful API for managing planetary data with user authentication and email functionality. Built with Flask, this API allows users to register, login, and perform CRUD operations on planetary information with JWT-based security.
 
 ## 🚀 Features
 
-- **Full CRUD Operations**: Create, Read, Update, and Delete products
-- **Automatic Database Setup**: Creates tables and seeds initial product data
-- **Data Validation**: Pydantic models for request/response validation
-- **Dependency Injection**: Clean database session management
-- **RESTful Endpoints**: Well-structured API endpoints following REST conventions
+- **User Authentication**: Register, login, and JWT token-based authorization
+- **Planetary CRUD**: Complete Create, Read, Update, Delete operations for planets
+- **Email Integration**: Password recovery via email using Mailtrap
+- **Database Seeding**: Pre-populated with Mercury, Venus, and Earth data
+- **Protected Endpoints**: JWT required for modifying data
+- **CLI Commands**: Custom commands for database management
 
 ## 🛠️ Technologies Used
 
-- **FastAPI** - Modern web framework for building APIs
-- **SQLAlchemy** - SQL toolkit and ORM
-- **PostgreSQL** - Relational database
-- **Pydantic** - Data validation using Python type hints
+- **Flask** - Web framework
+- **SQLAlchemy** - ORM for database operations
+- **Flask-JWT-Extended** - JWT authentication
+- **Flask-Marshmallow** - Object serialization/deserialization
+- **Flask-Mail** - Email functionality
+- **SQLite** - Development database
 - **Python 3.8+** - Programming language
 
 ## 📋 Prerequisites
 
 - Python 3.8 or higher
-- PostgreSQL installed and running
 - pip (Python package manager)
+- Mailtrap account (for email testing)
 
 ## 🔧 Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/product-inventory-api.git
-   cd product-inventory-api
+   git clone https://github.com/yourusername/planetary-api.git
+   cd planetary-api
    ```
 
 2. **Create a virtual environment**
@@ -40,112 +43,194 @@ A robust RESTful API backend for product inventory management built with FastAPI
 
 3. **Install dependencies**
    ```bash
-   pip install fastapi uvicorn sqlalchemy psycopg2-binary pydantic
+   pip install -r requirements.txt
    ```
 
-4. **Configure PostgreSQL**
-   - Create a PostgreSQL database named `Telusko`
-   - Update the database URL in `database.py` if needed:
-     ```python
-     db_url = "postgresql://postgres:matheesha@localhost:5432/Telusko"
-     ```
+4. **Configure environment variables** (optional)
+   Edit `app.py` to update:
+   - JWT secret key
+   - Mailtrap credentials
+   - Database URI
 
-5. **Run the application**
+5. **Create the database**
    ```bash
-   uvicorn main:app --reload
+   flask db_create
    ```
 
-6. **Access the API**
-   - API: http://localhost:8000
-   - Interactive docs: http://localhost:8000/docs
-   - Alternative docs: http://localhost:8000/redoc
+6. **Seed the database with initial data**
+   ```bash
+   flask db_seed
+   ```
+
+7. **Run the application**
+   ```bash
+   python app.py
+   ```
+
+8. **Access the API** at http://localhost:5000
 
 ## 📚 API Endpoints
 
 | Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|----------------|
 | GET | `/` | Welcome message | None |
-| GET | `/products` | Get all products | None |
-| GET | `/product/{product_id}` | Get a specific product | None |
-| POST | `/products` | Add a new product | None |
-| PUT | `/product` | Update an existing product | None |
-| DELETE | `/product` | Delete a product | None |
+| GET | `/super_simple` | Simple test endpoint | None |
+| GET | `/planets` | Get all planets | None |
+| GET | `/planet_details/<int:planet_id>` | Get specific planet | None |
+| POST | `/register` | Register new user | None |
+| POST | `/login` | User login | None |
+| GET | `/retrieve_password/<string:email>` | Recover password via email | None |
+| POST | `/add_planet` | Add new planet | JWT Required |
+| PUT | `/update_planet` | Update planet | JWT Required |
+| DELETE | `/remove_planet/<int:planet_id>` | Delete planet | JWT Required |
+| GET | `/parameters` | Query parameter example | None |
+| GET | `/url_variables/<string:name>/<int:age>` | URL variable example | None |
 
 ## 📝 Request/Response Examples
 
-### Get All Products
+### Register a New User
 ```bash
-GET http://localhost:8000/products
+POST http://localhost:5000/register
+Content-Type: application/x-www-form-urlencoded
+
+email=newuser@example.com
+first_name=John
+last_name=Doe
+password=securepassword123
 ```
 
-### Add a New Product
+### Login
 ```bash
-POST http://localhost:8000/products
+POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-    "id": 5,
-    "name": "Tablet",
-    "description": "10-inch Android tablet",
-    "price": 299.99
+    "email": "test@test.com",
+    "password": "P@ssw0rd"
 }
 ```
 
-### Update a Product
-```bash
-PUT http://localhost:8000/product?id=1
-Content-Type: application/json
-
+Response:
+```json
 {
-    "id": 1,
-    "name": "Gaming Laptop",
-    "description": "High performance gaming laptop with RTX graphics",
-    "price": 1500.00
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "message": "Login Succeeded!"
 }
 ```
 
-### Delete a Product
+### Add a Planet (Authenticated)
 ```bash
-DELETE http://localhost:8000/product?id=3
+POST http://localhost:5000/add_planet
+Authorization: Bearer <your_jwt_token>
+Content-Type: application/x-www-form-urlencoded
+
+planet_name=Mars
+planet_type=Class M
+home_star=Sol
+mass=6.39e23
+radius=2106
+distance=141.6e6
+```
+
+### Get All Planets
+```bash
+GET http://localhost:5000/planets
+```
+
+### Update a Planet (Authenticated)
+```bash
+PUT http://localhost:5000/update_planet
+Authorization: Bearer <your_jwt_token>
+Content-Type: application/x-www-form-urlencoded
+
+planet_id=1
+planet_name=Mercury
+planet_type=Class D
+home_star=Sol
+mass=3.285e23
+radius=1516
+distance=35.98e6
 ```
 
 ## 🗄️ Database Schema
 
-### Products Table
+### Users Table
 | Column | Type | Description |
 |--------|------|-------------|
-| id | Integer | Primary key, auto-incrementing |
-| name | String | Product name |
-| description | String | Product description |
-| price | Float | Product price |
+| id | Integer | Primary key |
+| first_name | String | User's first name |
+| last_name | String | User's last name |
+| email | String | Unique email address |
+| password | String | User password |
+
+### Planets Table
+| Column | Type | Description |
+|--------|------|-------------|
+| planet_id | Integer | Primary key |
+| planet_name | String | Name of the planet |
+| planet_type | String | Classification (Class D, K, M, etc.) |
+| home_star | String | Parent star system |
+| mass | Float | Planetary mass |
+| radius | Float | Planetary radius |
+| distance | Float | Distance from home star |
+
+## 🛠️ CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `flask db_create` | Create all database tables |
+| `flask db_drop` | Drop all database tables |
+| `flask db_seed` | Seed database with initial data |
 
 ## 📁 Project Structure
 
 ```
-product-inventory-api/
+planetary-api/
 │
-├── main.py              # FastAPI application and endpoints
-├── database.py          # Database connection configuration
-├── database_models.py   # SQLAlchemy ORM models
-├── models.py           # Pydantic models for validation
-└── requirements.txt    # Project dependencies
+├── app.py                 # Main application file
+├── requirements.txt       # Project dependencies
+└── planets.db            # SQLite database (created after setup)
 ```
 
-## 🚦 Running Tests
+## 🔐 Security Features
 
-Currently, no test suite is implemented. You can test the API using:
-- Browser for GET requests
-- Postman or similar tools for all methods
-- Swagger UI at http://localhost:8000/docs
+- JWT tokens for authenticated endpoints
+- Password protection (though currently stored as plaintext - should be hashed in production)
+- Email verification for password recovery
+
+## 🚦 Testing the API
+
+You can test the API using:
+- **Browser**: For GET requests
+- **Postman**: For all HTTP methods including authenticated requests
+- **cURL**: Command-line testing
+
+Example authenticated request with cURL:
+```bash
+curl -X POST http://localhost:5000/add_planet \
+  -H "Authorization: Bearer <your_token>" \
+  -d "planet_name=Jupiter&planet_type=Class J&home_star=Sol&mass=1.898e27&radius=43441&distance=484e6"
+```
 
 ## 💡 Future Improvements
 
-- Add user authentication and authorization
-- Implement pagination for product listing
-- Add search and filter functionality
+- Implement password hashing (bcrypt)
+- Add input validation
 - Create comprehensive test suite
-- Add input validation and error handling
-- Implement logging
+- Add pagination for planet listing
+- Implement refresh tokens
+- Add user roles and permissions
+- Deploy to cloud platform
+
+## ⚠️ Important Notes for Production
+
+- Change the JWT secret key to a secure value
+- Use environment variables for sensitive data
+- Replace Mailtrap with a production email service
+- Switch to PostgreSQL or MySQL for production
+- Implement proper password hashing
+- Add rate limiting
+- Enable HTTPS
 
 ## 📄 License
 
@@ -153,10 +238,11 @@ This project is for educational purposes as part of a portfolio.
 
 ## 👨‍💻 Author
 
-[Your Name]
+Matheesha Thamel
 
 ## 🙏 Acknowledgments
 
-- FastAPI documentation
+- Flask documentation
 - SQLAlchemy documentation
-- Telusko tutorials for inspiration
+- JWT Extended documentation
+- Mailtrap for email testing services
